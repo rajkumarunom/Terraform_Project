@@ -13,7 +13,7 @@ output "storage_account_name" {
 output "control_public_ip" {
 value = module.vm["control"].vm_public_ip
 }
- 
+
 output "web_public_ip" {
 value = module.vm["web"].vm_public_ip
 }
