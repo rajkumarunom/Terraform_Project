@@ -1,0 +1,104 @@
+name: Terraform-Ansible-Deployment
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Azure Login
+      uses: azure/login@v2
+      with:
+        creds: |
+          {
+            "clientId":"${{ secrets.AZURE_CLIENT_ID }}",
+            "clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}",
+            "subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}",
+            "tenantId":"${{ secrets.AZURE_TENANT_ID }}"
+          }
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+
+    - name: Terraform Init
+      working-directory: Terraform_Proj1
+      run: terraform init
+
+    - name: Terraform Plan
+      working-directory: Terraform_Proj1
+      run: terraform plan
+
+    - name: Terraform Apply
+      working-directory: Terraform_Proj1
+      run: terraform apply -auto-approve
+
+    - name: Extract VM Information
+      working-directory: Terraform_Proj1
+      run: |
+        echo "CONTROL_IP=$(terraform output -raw control_public_ip)" >> $GITHUB_ENV
+        echo "WEB_IP=$(terraform output -raw web_private_ip)" >> $GITHUB_ENV
+
+    - name: Configure SSH Key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+
+    - name: Wait For VM
+      run: sleep 120
+
+    - name: Install Ansible On Control VM
+      run: |
+        ssh -o StrictHostKeyChecking=no rajuser@$CONTROL_IP '
+        sudo apt update &&
+        sudo apt install ansible -y
+        '
+
+    - name: Copy Ansible Project To Control VM
+      run: |
+        scp -r \
+        -o StrictHostKeyChecking=no \
+        ansible_project \
+        rajuser@$CONTROL_IP:/home/rajuser/
+
+    - name: Create Dynamic Inventory
+      run: |
+        ssh -o StrictHostKeyChecking=no rajuser@$CONTROL_IP "
+        cat > /home/rajuser/ansible_project/inventory.ini << EOF
+        [web]
+        $WEB_IP ansible_user=rajuser
+        EOF
+        "
+
+    - name: Copy SSH Key To Control VM
+      run: |
+        scp \
+        -o StrictHostKeyChecking=no \
+        ~/.ssh/id_rsa \
+        rajuser@$CONTROL_IP:/home/rajuser/.ssh/id_rsa
+
+    - name: Set Permissions
+      run: |
+        ssh -o StrictHostKeyChecking=no rajuser@$CONTROL_IP '
+          chmod 600 ~/.ssh/id_rsa
+        '
+
+    - name: Run Ansible From Control VM
+      run: |
+        ssh -o StrictHostKeyChecking=no rajuser@$CONTROL_IP '
+          cd /home/rajuser/ansible_project
+
+          ansible-playbook \
+            -i inventory.ini \
+            site.yml
+        '

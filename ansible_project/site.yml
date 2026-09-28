@@ -1,0 +1,13 @@
+---
+- name: Install and configure Apache
+  hosts: webservers
+  become: true
+  gather_facts: true
+
+  vars:
+    apache_port: 80
+    owner_name: "Rajkumar K"
+
+  roles:
+    - apache
+    - disk_partition

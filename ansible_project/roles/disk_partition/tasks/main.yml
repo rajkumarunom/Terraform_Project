@@ -1,0 +1,32 @@
+---
+- name: Create partition on data disk
+  community.general.parted:
+    device: /dev/nvme0n2
+    number: 1
+    state: present
+    fs_type: ext4
+
+- name: Create ext4 filesystem
+  community.general.filesystem:
+    fstype: ext4
+    dev: /dev/nvme0n2p1
+
+- name: Create mount point
+  ansible.builtin.file:
+    path: /raj
+    state: directory
+    mode: '0755'
+
+- name: Mount partition
+  ansible.posix.mount:
+    path: /raj
+    src: /dev/nvme0n2p1
+    fstype: ext4
+    state: mounted
+
+- name: Set ownership
+  ansible.builtin.file:
+    path: /raj
+    owner: rajuser
+    group: rajuser
+    mode: '0755'

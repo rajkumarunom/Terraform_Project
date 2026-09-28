@@ -1,0 +1,41 @@
+---
+- name: Install and configure Apache
+  hosts: webservers
+  become: true
+  gather_facts: true
+
+  vars:
+    apache_port: 80
+    owner_name: "Rajkumar K"
+
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install Apache
+      ansible.builtin.apt:
+        name: apache2
+        state: present
+
+    - name: Deploy custom Apache home page
+      ansible.builtin.template:
+        src: templates/index.html.j2
+        dest: /var/www/html/index.html
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Restart Apache
+
+    - name: Ensure Apache is started and enabled
+      ansible.builtin.service:
+        name: apache2
+        state: started
+        enabled: true
+
+  handlers:
+    - name: Restart Apache
+      ansible.builtin.service:
+        name: apache2
+        state: restarted
