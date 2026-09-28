@@ -1,11 +1,11 @@
 module "resource_group" {
-  source = "./resource-group"
+  source = "./Resource-group"
   rg_name  = var.rg_name
   location = var.region
 }
 
 module "keyvault" {
-  source        = "./keyvault"
+  source        = "./Keyvault"
   keyvault_name = "kv-assignment2"
   location      = var.region
 
@@ -45,7 +45,7 @@ module "vnet_subnet" {
 module "vm" {
   for_each = var.vms
 
-  source              = "./vm"
+  source              = "./VM"
   vm_name             = each.value.vm_name
   location            = var.region
   resource_group_name = module.resource_group.resource_group_name
