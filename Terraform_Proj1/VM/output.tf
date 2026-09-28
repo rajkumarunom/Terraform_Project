@@ -10,6 +10,14 @@ output "storage_account_name" {
   value = azurerm_storage_account.storage.name
 }
 
-output "vm_public_ip" {
-  value = azurerm_public_ip.pip.ip_address
+output "control_public_ip" {
+value = module.vm["control"].vm_public_ip
+}
+ 
+output "web_public_ip" {
+value = module.vm["web"].vm_public_ip
+}
+ 
+output "web_private_ip" {
+value = module.vm["web"].private_ip
 }
