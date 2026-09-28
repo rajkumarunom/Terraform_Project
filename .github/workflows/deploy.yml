@@ -48,6 +48,11 @@ jobs:
         echo "CONTROL_IP=$(terraform output -raw control_public_ip)" >> $GITHUB_ENV
         echo "WEB_IP=$(terraform output -raw web_private_ip)" >> $GITHUB_ENV
 
+    - name: Debug
+      run: |
+        echo "CONTROL_IP=$(terraform output -raw control_public_ip)"
+        echo "WEB_IP=$(terraform output -raw web_private_ip)"
+        
     - name: Configure SSH Key
       run: |
         mkdir -p ~/.ssh
