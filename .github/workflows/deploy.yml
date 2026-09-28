@@ -28,7 +28,7 @@ jobs:
           }
     - name: Check Azure Account
       run: az account show
-      
+
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
 
@@ -43,6 +43,10 @@ jobs:
     - name: Terraform Apply
       working-directory: Terraform_Proj1
       run: terraform apply -auto-approve
+
+    - name: Terraform state
+      working-directory: Terraform_Proj1
+      run: terraform state list
 
     - name: Extract VM Information
       working-directory: Terraform_Proj1

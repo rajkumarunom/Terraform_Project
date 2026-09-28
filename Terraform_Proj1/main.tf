@@ -6,7 +6,7 @@ module "resource_group" {
 
 module "keyvault" {
   source        = "./Keyvault"
-  keyvault_name = "kv-assignment2"
+  keyvault_name = "kv-assignment3"
   location      = var.region
 
   resource_group_name = module.resource_group.resource_group_name
