@@ -26,7 +26,9 @@ jobs:
             "subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}",
             "tenantId":"${{ secrets.AZURE_TENANT_ID }}"
           }
-
+    - name: Check Azure Account
+      run: az account show
+      
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
 
@@ -52,7 +54,7 @@ jobs:
       run: |
         echo "CONTROL_IP=$(terraform output -raw control_public_ip)"
         echo "WEB_IP=$(terraform output -raw web_private_ip)"
-        
+
     - name: Configure SSH Key
       run: |
         mkdir -p ~/.ssh
